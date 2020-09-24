@@ -1,5 +1,5 @@
 import 'dart:convert';
-
+import 'package:dynamic_theme/dynamic_theme.dart';
 import 'package:flutter/material.dart';
 import 'package:india_corona/datasource.dart';
 import 'package:india_corona/pages/countryPage.dart';
@@ -16,9 +16,13 @@ class HomePage extends StatefulWidget {
 class _HomePageState extends State<HomePage> {
   @override
   void initState() {
+    fetchData();
+    super.initState();
+  }
+
+  Future fetchData() async {
     fetchWorldWideData();
     fetchCountryData();
-    super.initState();
   }
 
   Map worldData;
@@ -33,8 +37,8 @@ class _HomePageState extends State<HomePage> {
 
   List countryData;
   fetchCountryData() async {
-    http.Response response =
-        await http.get('https://corona.lmao.ninja/v3/covid-19/countries');
+    http.Response response = await http
+        .get('https://corona.lmao.ninja/v3/covid-19/countries?sort=cases');
     setState(() {
       // .body is bcoz we want data in json format or String format
       countryData = json.decode(response.body);
@@ -45,97 +49,118 @@ class _HomePageState extends State<HomePage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+        //actions takes up the list of widgets
+        // icon can be added to the right of the appBar
+        actions: [
+          IconButton(
+            icon: Icon(Theme.of(context).brightness == Brightness.light
+                ? Icons.lightbulb_outline
+                : Icons.highlight),
+            onPressed: () {
+              DynamicTheme.of(context).setBrightness(
+                  Theme.of(context).brightness == Brightness.light
+                      ? Brightness.dark
+                      : Brightness.light);
+            },
+          ),
+        ],
         title: Text('COVID 19'),
         centerTitle: true,
         backgroundColor: primaryBlack,
       ),
-      body: SingleChildScrollView(
-        child: Column(
-          //bcoz the 'Worldwide' is in center we want in start
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Container(
-              alignment: Alignment.center,
-              padding: EdgeInsets.all(10.0),
-              height: 100,
-              color: Colors.orange[100],
-              child: Text(
-                DataSource.quote,
-                style: TextStyle(
-                  color: Colors.orange[800],
-                  fontWeight: FontWeight.bold,
-                  fontSize: 16,
+      body: RefreshIndicator(
+        // NOTE: this takes only 1 function so we have made a new fetchData and added our two function in one
+        onRefresh: fetchData,
+        child: SingleChildScrollView(
+          child: Column(
+            //bcoz the 'Worldwide' is in center we want in start
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Container(
+                alignment: Alignment.center,
+                padding: EdgeInsets.all(10.0),
+                height: 100,
+                color: Colors.orange[100],
+                child: Text(
+                  DataSource.quote,
+                  style: TextStyle(
+                    color: Colors.orange[800],
+                    fontWeight: FontWeight.bold,
+                    fontSize: 16,
+                  ),
                 ),
               ),
-            ),
-            Padding(
-              padding: const EdgeInsets.all(10.0),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text(
-                    'WorldWide',
-                    style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
-                  ),
-                  GestureDetector(
-                    onTap: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => CountryPage(),
+              Padding(
+                padding: const EdgeInsets.all(10.0),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      'WorldWide',
+                      style:
+                          TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+                    ),
+                    GestureDetector(
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => CountryPage(),
+                          ),
+                        );
+                      },
+                      child: Container(
+                        padding: EdgeInsets.all(10),
+                        decoration: BoxDecoration(
+                            color: Colors.black,
+                            borderRadius: BorderRadius.circular(10)),
+                        child: Text(
+                          'Regional',
+                          style: TextStyle(
+                              fontSize: 16,
+                              color: Colors.white,
+                              fontWeight: FontWeight.bold),
                         ),
-                      );
-                    },
-                    child: Container(
-                      padding: EdgeInsets.all(10),
-                      decoration: BoxDecoration(
-                          color: Colors.black,
-                          borderRadius: BorderRadius.circular(10)),
-                      child: Text(
-                        'Regional',
-                        style: TextStyle(
-                            fontSize: 16,
-                            color: Colors.white,
-                            fontWeight: FontWeight.bold),
                       ),
                     ),
-                  ),
-                ],
-              ),
-            ),
-            // worldData = worldData bcoz we need to pass the value fetched in the worldata
-            worldData == null
-                ? CircularProgressIndicator()
-                : WorldwidePanel(
-                    worldData: worldData,
-                  ),
-            Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: Text(
-                'Most Affected Counrtries',
-                style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
-              ),
-            ),
-            SizedBox(height: 10),
-            countryData == null
-                ? CircularProgressIndicator()
-                : MostAffectedPanel(
-                    countryData: countryData,
-                  ),
-            SizedBox(height: 10),
-            InfoPanel(),
-            SizedBox(height: 20),
-            Center(
-              child: Text(
-                'WE ARE TOGETHER IN THE FIGHT',
-                style: TextStyle(
-                  fontWeight: FontWeight.bold,
-                  fontSize: 16,
+                  ],
                 ),
               ),
-            ),
-            SizedBox(height: 70),
-          ],
+              // worldData = worldData bcoz we need to pass the value fetched in the worldata
+              worldData == null
+                  ? CircularProgressIndicator()
+                  : WorldwidePanel(
+                      worldData: worldData,
+                    ),
+              
+              Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: Text(
+                  'Most Affected Counrtries',
+                  style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+                ),
+              ),
+              SizedBox(height: 10),
+              countryData == null
+                  ? CircularProgressIndicator()
+                  : MostAffectedPanel(
+                      countryData: countryData,
+                    ),
+              SizedBox(height: 10),
+              InfoPanel(),
+              SizedBox(height: 20),
+              Center(
+                child: Text(
+                  'WE ARE TOGETHER IN THE FIGHT',
+                  style: TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 16,
+                  ),
+                ),
+              ),
+              SizedBox(height: 70),
+            ],
+          ),
         ),
       ),
     );
