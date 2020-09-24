@@ -1,4 +1,4 @@
-# india_corona
+# Covid-19
 
 A new Flutter project.
 
