@@ -1,4 +1,4 @@
-# Covid-19 Application made by Flutter
+# 🦠Covid-19 Application made by Flutter
 
 A new Flutter project.
 
